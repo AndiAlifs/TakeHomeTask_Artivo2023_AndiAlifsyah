@@ -3,16 +3,45 @@
     <head>
         <title>Recipe App</title>
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
         <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     </head>
     <body>
+
+        <!-- logout button -->
+
         <div class="container mt-5">
-            <h1>Recipe List</h1>
-            <ul id="recipeList"></ul>
+            <div class="row mb-2">
+                <div class="col-md-3"></div>
+                <div class="col-md-6">
+                    <h1 class="text-center mb-2">Recipe List</h1>
+                </div>
+                <div class="col-md-3">
+                    <button id="logoutBtn" class="btn btn-danger float-right mt-2">Logout</button>
+                </div>
+            </div>
+            <ul id="recipeList" class="p-0"></ul>
         </div>
+        
 
         <script>
+
+            // Logout button click handler
+            $('#logoutBtn').click(() => {
+                // Remove the access token from localStorage
+                localStorage.removeItem('access_token');
+
+                swal({
+                    title: 'Logged out',
+                    text: 'You have been logged out.',
+                    icon: 'success',
+                    button: 'OK'
+                }).then(() => {
+                    window.location.href = '/login';
+                });
+            });
+
             // Check if there's an access token in localStorage
             const token = localStorage.getItem('access_token');
 
@@ -29,22 +58,75 @@
 
             // Fetch recipes and populate the list
             $.ajax({
-                url: '/recipes',
+                url: '/get_recipe',
                 type: 'GET',
                 headers: {
                     Authorization: 'Bearer ' + token
                 },
                 success: function (data) {
                     const recipeList = $('#recipeList');
-                    data.recipes.forEach(recipe => {
-                        const li = $('<li>').text(recipe.title);
-                        recipeList.append(li);
+                    data.forEach(recipe => {
+                        const card = $('<div>').addClass('card mb-3');
+                        const img = $('<img>').addClass('card-img-top').attr('src', recipe.photos_link).attr('width', '100%').attr('height', '200');
+                        img.css('object-fit', 'cover');
+                        const cardBody = $('<div>').addClass('card-body');
+
+                        // Create card title and like button in the same row
+                        const titleRow = $('<div>').addClass('row');
+                        const titleCol = $('<div>').addClass('col-md-9'); // Title column
+                        const likeCol = $('<div>').addClass('col-md-3 text-right'); // Like button column
+
+                        const title = $('<h5>').addClass('card-title').text(recipe.title);
+
+                        // Create like button
+                        const likeButton = $('<button>').addClass('btn btn-link like-button');
+                        likeButton.html('<i class="far fa-heart"></i>');
+                        likeButton.data('recipe-id', recipe.id);  // Store recipe ID for later use
+
+                        titleCol.append(title);
+                        likeCol.append(likeButton);
+
+                        titleRow.append(titleCol, likeCol);
+
+                        const content = $('<p>').addClass('card-text').text(recipe.content);
+
+                        cardBody.append(titleRow, content);
+                        card.append(img, cardBody);
+                        recipeList.append(card);
+                    });
+
+                    // Handle like button click
+                    $('.like-button').click(function () {
+                        console.log('Like button clicked');
+                        const recipeId = $(this).data('recipe-id');
+
+                        // Change button appearance if kliked
+                        if ($(this).html() === '<i class="fas fa-heart" style="color: red;"></i>') {
+                            $(this).html('<i class="far fa-heart"></i>');
+                        } else {
+                            $(this).html('<i class="fas fa-heart" style="color: red;"></i>');
+                        }
+
+                        // Make API request to like the recipe
+                        $.ajax({
+                            type: 'POST',
+                            url: '/like/' + recipeId,  // Replace with your like API endpoint
+                            success: function () {
+                                // Change button appearance
+                                $(this).html('<i class="fas fa-heart" style="color: red;"></i>');
+                            }.bind(this),  // Ensure 'this' refers to the button clicked
+                            error: function (error) {
+                                console.error(error);
+                            }
+                        });
                     });
                 },
                 error: function (error) {
                     console.error(error);
                 }
             });
+
+            
         </script>
     </body>
 </html>
