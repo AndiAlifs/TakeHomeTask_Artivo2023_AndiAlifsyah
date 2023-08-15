@@ -1,18 +1,20 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for
-from flask_jwt_simple import JWTManager
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 import os
 
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_jwt_simple import create_jwt, get_jwt_identity, jwt_required
+from flask_jwt_extended import create_access_token
+from flask_jwt_extended import get_jwt_identity
+from flask_jwt_extended import jwt_required
+from flask_jwt_extended import JWTManager
 
 app = Flask(__name__)
 app.config['JWT_SECRET_KEY'] = 'super-secret'
 
 uri = os.getenv("DATABASE_URL")
-if uri.startswith("postgres://"):
-    uri = uri.replace("postgres://", "postgresql://", 1)
+# if uri.startswith("postgres://"):
+#     uri = uri.replace("postgres://", "postgresql://", 1)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = uri or 'sqlite:///app.db'
 
@@ -76,7 +78,7 @@ def login():
 
     user = User.query.filter_by(username=username).first()
     if user and check_password_hash(user.password, password):
-        token = create_jwt(identity=user.id)
+        token = create_access_token(identity=user.id)
         return jsonify(token=token), 200
 
     return jsonify(message='Invalid credentials'), 401
@@ -99,7 +101,7 @@ def recipes():
     return jsonify([recipe.serialize() for recipe in recipes]), 200
 
 @app.route('/add_recipe', methods=['POST'])
-@jwt_required
+@jwt_required()
 def add_recipe():
     user_id = get_jwt_identity()
     if user_id is None:
@@ -118,7 +120,7 @@ def add_recipe():
         return jsonify(message='Recipe created successfully'), 201
 
 @app.route('/toggle_like/<int:recipe_id>', methods=['POST'])
-@jwt_required
+@jwt_required()
 def toggle_like(recipe_id):
     user_id = get_jwt_identity()
     if user_id is None:
@@ -136,7 +138,7 @@ def toggle_like(recipe_id):
             return jsonify(message='Like added'), 200
 
 @app.route('/check_like/<int:recipe_id>', methods=['GET'])
-@jwt_required
+@jwt_required()
 def check_like(recipe_id):
     user_id = get_jwt_identity()
     if user_id is None:
@@ -149,7 +151,7 @@ def check_like(recipe_id):
             return jsonify(liked=False), 200
 
 @app.route('/me', methods=['GET'])
-@jwt_required
+@jwt_required()
 def protected():
     user_id = get_jwt_identity()
     if user_id is None:
