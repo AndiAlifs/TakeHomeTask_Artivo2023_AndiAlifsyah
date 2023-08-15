@@ -112,6 +112,37 @@ def add_recipe():
 
         return jsonify(message='Recipe created successfully'), 201
 
+@app.route('/toggle_like/<int:recipe_id>', methods=['POST'])
+@jwt_required
+def toggle_like(recipe_id):
+    user_id = get_jwt_identity()
+    if user_id is None:
+        return jsonify(message='Unauthorized'), 401
+    else:
+        like = Like.query.filter_by(user_id=user_id, recipe_id=recipe_id).first()
+        if like:
+            db.session.delete(like)
+            db.session.commit()
+            return jsonify(message='Like removed'), 200
+        else:
+            like = Like(user_id=user_id, recipe_id=recipe_id)
+            db.session.add(like)
+            db.session.commit()
+            return jsonify(message='Like added'), 200
+
+@app.route('/check_like/<int:recipe_id>', methods=['GET'])
+@jwt_required
+def check_like(recipe_id):
+    user_id = get_jwt_identity()
+    if user_id is None:
+        return jsonify(message='Unauthorized'), 401
+    else:
+        like = Like.query.filter_by(user_id=user_id, recipe_id=recipe_id).first()
+        if like:
+            return jsonify(liked=True), 200
+        else:
+            return jsonify(liked=False), 200
+
 @app.route('/me', methods=['GET'])
 @jwt_required
 def protected():

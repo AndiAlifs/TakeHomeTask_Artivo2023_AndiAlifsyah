@@ -80,7 +80,23 @@
 
                         // Create like button
                         const likeButton = $('<button>').addClass('btn btn-link like-button');
-                        likeButton.html('<i class="far fa-heart"></i>');
+                        
+                        // Check if the recipe is liked
+                        $.ajax({
+                            url: '/check_like/' + recipe.id,
+                            type: 'GET',
+                            headers: {
+                                Authorization: 'Bearer ' + token
+                            },
+                            success: function (dataLike) {
+                                if (dataLike.liked) {
+                                    likeButton.html('<i class="fas fa-heart" style="color: red;"></i>');
+                                } else {
+                                    likeButton.html('<i class="far fa-heart"></i>');
+                                }
+                            },
+                        })
+
                         likeButton.data('recipe-id', recipe.id);  // Store recipe ID for later use
 
                         titleCol.append(title);
@@ -100,20 +116,20 @@
                         console.log('Like button clicked');
                         const recipeId = $(this).data('recipe-id');
 
-                        // Change button appearance if kliked
-                        if ($(this).html() === '<i class="fas fa-heart" style="color: red;"></i>') {
-                            $(this).html('<i class="far fa-heart"></i>');
-                        } else {
-                            $(this).html('<i class="fas fa-heart" style="color: red;"></i>');
-                        }
-
                         // Make API request to like the recipe
                         $.ajax({
                             type: 'POST',
-                            url: '/like/' + recipeId,  // Replace with your like API endpoint
+                            headers: {
+                                Authorization: 'Bearer ' + token
+                            },
+                            url: '/toggle_like/' + recipeId,  // Replace with your like API endpoint
                             success: function () {
                                 // Change button appearance
-                                $(this).html('<i class="fas fa-heart" style="color: red;"></i>');
+                                if ($(this).html() === '<i class="fas fa-heart" style="color: red;"></i>') {
+                                    $(this).html('<i class="far fa-heart"></i>');
+                                } else {
+                                    $(this).html('<i class="fas fa-heart" style="color: red;"></i>');
+                                }
                             }.bind(this),  // Ensure 'this' refers to the button clicked
                             error: function (error) {
                                 console.error(error);
