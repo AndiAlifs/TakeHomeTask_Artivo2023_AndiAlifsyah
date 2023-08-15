@@ -76,6 +76,10 @@ def login():
 
     return jsonify(message='Invalid credentials'), 401
 
+@app.route('/', methods=['GET'])
+def index():
+    return render_template('index.html')
+
 @app.route('/login', methods=['GET'])
 def login_page():
     return render_template('login.html')
@@ -87,7 +91,7 @@ def signup_page():
 @app.route('/get_recipe', methods=['GET'])
 def recipes():
     recipes = Recipe.query.all()
-    return render_template('recipe.html', recipes=recipes)
+    return jsonify([recipe.serialize() for recipe in recipes]), 200
 
 @app.route('/add_recipe', methods=['POST'])
 @jwt_required
@@ -97,10 +101,12 @@ def add_recipe():
         return jsonify(message='Unauthorized'), 401
     else:
         data = request.json
+        title = data.get('title')
         content = data.get('content')
         photos_link = data.get('photos_link')
 
-        recipe = Recipe(content=content, user_id=user_id, photos_link=photos_link)
+        recipe = Recipe(title=title, content=content, photos_link=photos_link, user_id=user_id)
+
         db.session.add(recipe)
         db.session.commit()
 
