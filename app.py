@@ -9,7 +9,12 @@ from flask_jwt_simple import create_jwt, get_jwt_identity, jwt_required
 
 app = Flask(__name__)
 app.config['JWT_SECRET_KEY'] = 'super-secret'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
+
+uri = os.getenv("DATABASE_URL")
+if uri.startswith("postgres://"):
+    uri = uri.replace("postgres://", "postgresql://", 1)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = uri or 'sqlite:///app.db'
 
 
 jwt = JWTManager(app)
