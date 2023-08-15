@@ -101,6 +101,10 @@ def recipes():
     recipes = Recipe.query.all()
     return jsonify([recipe.serialize() for recipe in recipes]), 200
 
+@app.route('/add_recipe', methods=['GET'])
+def add_recipe_page():
+    return render_template('add_recipe.html')
+
 @app.route('/add_recipe', methods=['POST'])
 @jwt_required()
 def add_recipe():

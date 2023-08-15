@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Recipe</title>
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">Add New Recipe</h1>
+        <form id="addRecipeForm" >
+            <div class="form-group">
+                <label for="title">Title</label>
+                <input type="text" class="form-control" id="title" name="title" required>
+            </div>
+            <div class="form-group">
+                <label for="content">Content</label>
+                <textarea class="form-control" id="content" name="content" rows="4" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="photoUrl">Photo URL</label>
+                <input type="text" class="form-control" id="photoUrl" name="photoUrl" required>
+            </div>
+            <a id="buttonSubmit" class="btn btn-primary">Add Recipe</a>
+            <a href="/" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script>
+        $(document).ready(function () {
+
+            const token = localStorage.getItem('access_token');
+
+            if (!token) { // Redirect to the login page
+                swal({
+                    title: 'Unauthorized',
+                    text: 'Please login to access this page.',
+                    icon: 'error',
+                    button: 'OK'
+                }).then(() => {
+                    window.location.href = '/login';
+                });
+            }
+
+            $('#buttonSubmit').click(function () {
+                console.log('button clicked');
+                event.preventDefault();
+
+                const formData = {
+                    title: $('#title').val(),
+                    content: $('#content').val(),
+                    photos_link: $('#photoUrl').val()
+                };
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/add_recipe',  
+                    headers:{
+                        Authorization: 'Bearer ' + token
+                    },
+                    data: JSON.stringify(formData),
+                    contentType: 'application/json',
+                    success: function (response) {
+                        swal({
+                            title: 'Success!',
+                            text: 'Recipe added successfully.',
+                            icon: 'success',
+                            button: 'OK'
+                        }).then(function () {
+                            window.location.href = '/';  
+                        });
+                    },
+                    error: function (error) {
+                        console.error(error);
+                        alert('Error adding recipe.');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
