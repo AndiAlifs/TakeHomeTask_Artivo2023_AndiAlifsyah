@@ -1,5 +1,7 @@
 # Recipe Forum
 
+![Index Page of Recipe Forum](ssofindex.png)
+
 Recipe Forum is an app built by Andi Alifsyah as part of a test at Artivo.id in 2023. The app is deployed and can be accessed at https://artivorecipe-70cb3b9ac4bf.herokuapp.com/.
 
 ## Features
