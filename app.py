@@ -24,14 +24,18 @@ class User(db.Model):
 
 class Recipe(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(255), nullable=False)
     content = db.Column(db.Text, nullable=False)
+    photos_link = db.Column(db.String(255), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     user = db.relationship('User', backref=db.backref('recipe', lazy=True))
 
     def serialize(self):
         return {
             'id': self.id,
+            'title': self.title,
             'content': self.content,
+            'photos_link': self.photos_link,
             'user_id': self.user_id
         }
 
@@ -59,7 +63,6 @@ def signup():
 
     return jsonify(message='User created successfully'), 201
 
-# Login
 @app.route('/login', methods=['POST'])
 def login():
     data = request.json
@@ -81,7 +84,28 @@ def login_page():
 def signup_page():
     return render_template('signup.html')
 
-# Protected route
+@app.route('/get_recipe', methods=['GET'])
+def recipes():
+    recipes = Recipe.query.all()
+    return render_template('recipe.html', recipes=recipes)
+
+@app.route('/add_recipe', methods=['POST'])
+@jwt_required
+def add_recipe():
+    user_id = get_jwt_identity()
+    if user_id is None:
+        return jsonify(message='Unauthorized'), 401
+    else:
+        data = request.json
+        content = data.get('content')
+        photos_link = data.get('photos_link')
+
+        recipe = Recipe(content=content, user_id=user_id, photos_link=photos_link)
+        db.session.add(recipe)
+        db.session.commit()
+
+        return jsonify(message='Recipe created successfully'), 201
+
 @app.route('/me', methods=['GET'])
 @jwt_required
 def protected():
