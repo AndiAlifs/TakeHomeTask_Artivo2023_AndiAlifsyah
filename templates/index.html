@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Recipe App</title>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    </head>
+    <body>
+        <div class="container mt-5">
+            <h1>Recipe List</h1>
+            <ul id="recipeList"></ul>
+        </div>
+
+        <script>
+            // Check if there's an access token in localStorage
+            const token = localStorage.getItem('access_token');
+
+            if (! token) { // Redirect to the login page
+                swal({
+                    title: 'Unauthorized',
+                    text: 'Please login to access this page.',
+                    icon: 'error',
+                    button: 'OK'
+                }).then(() => {
+                    window.location.href = '/login';
+                });
+            }
+
+            // Fetch recipes and populate the list
+            $.ajax({
+                url: '/recipes',
+                type: 'GET',
+                headers: {
+                    Authorization: 'Bearer ' + token
+                },
+                success: function (data) {
+                    const recipeList = $('#recipeList');
+                    data.recipes.forEach(recipe => {
+                        const li = $('<li>').text(recipe.title);
+                        recipeList.append(li);
+                    });
+                },
+                error: function (error) {
+                    console.error(error);
+                }
+            });
+        </script>
+    </body>
+</html>

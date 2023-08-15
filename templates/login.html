@@ -2,6 +2,7 @@
 <html>
     <head>
         <title>Login</title>
+        <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     </head>
     <body>
@@ -17,8 +18,8 @@
                     <input type="password" class="form-control" id="password" name="password" required>
                 </div>
                 <button type="submit" class="btn btn-primary">Login</button>
+                <a href="/signup" class="btn btn-link">Register</a>
             </form>
-            <p id="loginMessage" class="mt-3"></p>
         </div>
 
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -39,13 +40,23 @@
                         contentType: 'application/json',
                         success: function (response) {
                             localStorage.setItem('access_token', response.token);
-                            $('#loginMessage').text('Login successful. Redirecting...');
-                            setTimeout(function () {
-                                window.location.href = '/protected'; // Redirect to feed page after successful login
-                            }, 1000);
+
+                            swal({
+                                title: "Success!",
+                                text: "You are logged in!",
+                                icon: "success",
+                                button: "OK",
+                            }).then(function() {
+                                window.location.href = '/';
+                            });
                         },
                         error: function (error) {
-                            $('#loginMessage').text('Login failed. Invalid credentials.');
+                            swal({
+                                title: "Error!",
+                                text: error.responseJSON.message,
+                                icon: "error",
+                                button: "OK",
+                            });
                         }
                     });
                 });
