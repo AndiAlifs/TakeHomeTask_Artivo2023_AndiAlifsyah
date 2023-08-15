@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Sign Up</title>
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
@@ -17,8 +18,8 @@
                 <input type="password" class="form-control" id="password" name="password" required>
             </div>
             <button type="submit" class="btn btn-primary">Sign Up</button>
+            <a href="/login" class="btn btn-link">Log In</a>
         </form>
-        <p id="signupMessage" class="mt-3"></p>
     </div>
 
     <script src="https://code.jquery.com/jquery-2.2.4.min.js" type="text/javascript"></script>
@@ -38,13 +39,22 @@
                     data: JSON.stringify(formData),
                     contentType: 'application/json',
                     success: function(response) {
-                        $('#signupMessage').text('Sign up successful. Redirecting...');
-                        setTimeout(function() {
-                            window.location.href = '/login';  // Redirect to login page after successful signup
-                        }, 1000);
+                        swal({
+                            title: "Success!",
+                            text: "You have successfully signed up.",
+                            icon: "success",
+                            button: "OK",
+                        }).then(function() {
+                            window.location.href = '/login';
+                        });
                     },
                     error: function(error) {
-                        $('#signupMessage').text('Sign up failed. Please try again.');
+                        swal({
+                            title: "Error!",
+                            text: "An error occurred while signing up.",
+                            icon: "error",
+                            button: "OK",
+                        });
                     }
                 });
             });
