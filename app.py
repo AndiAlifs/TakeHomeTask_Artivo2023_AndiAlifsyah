@@ -189,7 +189,7 @@ def get_comments(recipe_id):
 
 @app.route('/add_comment', methods=['POST'])
 @jwt_required()
-def add_comment(recipe_id):
+def add_comment():
     user_id = get_jwt_identity()
     if user_id is None:
         return jsonify(message='Unauthorized'), 401
