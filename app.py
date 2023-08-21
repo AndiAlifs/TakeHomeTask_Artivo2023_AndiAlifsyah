@@ -134,6 +134,7 @@ def add_recipe():
         return jsonify(message='Recipe created successfully'), 201
 
 @app.route('/search_recipe', methods=['GET'])
+@jwt_required()
 def search_recipe():
     keyword = request.args.get('keyword')
     recipes = Recipe.query.filter(Recipe.title.contains(keyword)).all() 

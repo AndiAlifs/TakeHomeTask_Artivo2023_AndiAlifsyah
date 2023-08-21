@@ -9,8 +9,7 @@
     </head>
     <body>
 
-        <!-- logout button -->
-
+        
         <div class="container mt-5">
             <div class="row mb-2">
                 <div class="col-md-3">
@@ -23,30 +22,20 @@
                     <button id="logoutBtn" class="btn btn-danger float-right mt-2"><i class="fas fa-sign-out-alt"></i> Logout</button>
                 </div>
             </div>
+            <!-- search form -->
+            <form>
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" id="searchForm" placeholder="Search recipe" name="search">
+                </div>
+            </form>
+
             <ul id="recipeList" class="p-0"></ul>
         </div>
         
 
         <script>
-
-            // Logout button click handler
-            $('#logoutBtn').click(() => {
-                // Remove the access token from localStorage
-                localStorage.removeItem('access_token');
-
-                swal({
-                    title: 'Logged out',
-                    text: 'You have been logged out.',
-                    icon: 'success',
-                    button: 'OK'
-                }).then(() => {
-                    window.location.href = '/login';
-                });
-            });
-
             // Check if there's an access token in localStorage
             const token = localStorage.getItem('access_token');
-
             if (! token) { // Redirect to the login page
                 swal({
                     title: 'Unauthorized',
@@ -58,15 +47,8 @@
                 });
             }
 
-            // Fetch recipes and populate the list
-            $.ajax({
-                url: '/get_recipe',
-                type: 'GET',
-                headers: {
-                    Authorization: 'Bearer ' + token
-                },
-                success: function (data) {
-                    const recipeList = $('#recipeList');
+            function renderpage(data){
+                const recipeList = $('#recipeList');
                     data.forEach(recipe => {
                         const card = $('<div>').addClass('card mb-3');
                         const img = $('<img>').addClass('card-img-top').attr('src', recipe.photos_link).attr('width', '100%').attr('height', '200');
@@ -158,13 +140,61 @@
                             }
                         });
                     });
+            }
+
+            // Search form handler
+            $('#searchForm').keyup(function() {
+                keyword = $(this).val().toLowerCase();
+
+                $.ajax({
+                    url: '/search_recipe',
+                    type: 'GET',
+                    data: {
+                        keyword: keyword
+                    },
+                    headers: {
+                        Authorization: 'Bearer ' + token
+                    },
+                    success: function (data){
+                        $('#recipeList').empty();
+                        renderpage(data);
+                    },
+                    error: function (error) {
+                        console.error(error);
+                    }
+
+                })
+            })
+
+            // Logout button click handler
+            $('#logoutBtn').click(() => {
+                // Remove the access token from localStorage
+                localStorage.removeItem('access_token');
+
+                swal({
+                    title: 'Logged out',
+                    text: 'You have been logged out.',
+                    icon: 'success',
+                    button: 'OK'
+                }).then(() => {
+                    window.location.href = '/login';
+                });
+            });
+
+            // Fetch recipes and populate the list
+            $.ajax({
+                url: '/get_recipe',
+                type: 'GET',
+                headers: {
+                    Authorization: 'Bearer ' + token
+                },
+                success: function (data) {
+                    renderpage(data);
                 },
                 error: function (error) {
                     console.error(error);
                 }
             });
-
-            
         </script>
     </body>
 </html>
