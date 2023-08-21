@@ -58,6 +58,15 @@ class Comment(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     recipe_id = db.Column(db.Integer, db.ForeignKey('recipe.id'), nullable=False)
 
+    def serialize(self):
+        return {
+            'id': self.id,
+            'comment': self.comment,
+            'user_id': self.user_id,
+            'username': User.query.get(self.user_id).username,
+            'recipe_id': self.recipe_id
+        }
+
 # routes yang digunakan
 @app.route('/signup', methods=['POST'])
 def signup():
@@ -124,6 +133,12 @@ def add_recipe():
 
         return jsonify(message='Recipe created successfully'), 201
 
+@app.route('/search_recipe', methods=['GET'])
+def search_recipe():
+    keyword = request.args.get('keyword')
+    recipes = Recipe.query.filter(Recipe.title.contains(keyword)).all() 
+    return jsonify([recipe.serialize() for recipe in recipes]), 200
+
 @app.route('/toggle_like/<int:recipe_id>', methods=['POST'])
 @jwt_required()
 def toggle_like(recipe_id):
@@ -154,6 +169,42 @@ def check_like(recipe_id):
             return jsonify(liked=True), 200
         else:
             return jsonify(liked=False), 200
+
+@app.route('/detail_recipe/<int:recipe_id>', methods=['GET'])
+def detail_recipe(recipe_id):
+    recipe = Recipe.query.get(recipe_id)
+    count_like = Like.query.filter_by(recipe_id=recipe_id).count()
+    count_comment = Comment.query.filter_by(recipe_id=recipe_id).count()
+    data = {
+        'recipe': recipe.serialize(),
+        'count_like': count_like,
+        'count_comment': count_comment
+    }
+    return render_template('detail_recipe.html', data=data)
+
+@app.route('/get_comments/<int:recipe_id>', methods=['GET'])
+def get_comments(recipe_id):
+    comments = Comment.query.filter_by(recipe_id=recipe_id).all()
+    return jsonify([comment.serialize() for comment in comments]), 200
+
+@app.route('/add_comment', methods=['POST'])
+@jwt_required()
+def add_comment(recipe_id):
+    user_id = get_jwt_identity()
+    if user_id is None:
+        return jsonify(message='Unauthorized'), 401
+    else:
+        data = request.json
+        recipe_id = data.get('recipe_id')
+        comment = data.get('comment')
+
+        comment = Comment(comment=comment, user_id=user_id, recipe_id=recipe_id)
+
+        db.session.add(comment)
+        db.session.commit()
+
+        return jsonify(message='Comment added'), 201
+
 
 @app.route('/me', methods=['GET'])
 @jwt_required()

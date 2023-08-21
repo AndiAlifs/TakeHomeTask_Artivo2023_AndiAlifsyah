@@ -97,6 +97,16 @@
                                     likeButton.html('<i class="far fa-heart"></i>');
                                 }
                             },
+                            error: function (error) {
+                                swal({
+                                    title: 'Unauthorized',
+                                    text: 'Please login to access this page.',
+                                    icon: 'error',
+                                    button: 'OK'
+                                }).then(() => {
+                                    window.location.href = '/login';
+                                });
+                            }
                         })
 
                         likeButton.data('recipe-id', recipe.id);  // Store recipe ID for later use
@@ -106,9 +116,19 @@
 
                         titleRow.append(titleCol, likeCol);
 
-                        const content = $('<p>').addClass('card-text').text(recipe.content);
+                        const contentRow = $('<div>').addClass('row');
+                        const contentCol = $('<div>').addClass('col-md-9');
+                        const detailButtonCol = $('<div>').addClass('col-md-3 text-right');
 
-                        cardBody.append(titleRow, content);
+                        const detailButton = $('<a>').addClass('btn btn-primary').attr('href', '/detail_recipe/' + recipe.id).text('Detail');
+                        detailButtonCol.append(detailButton);
+
+                        const content = $('<p>').addClass('card-text').text(recipe.content);
+                        contentCol.append(content);
+
+                        contentRow.append(contentCol, detailButtonCol);
+
+                        cardBody.append(titleRow, contentRow);
                         card.append(img, cardBody);
                         recipeList.append(card);
                     });

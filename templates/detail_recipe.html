@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Recipe Detail</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <!-- ... Tombol balik -->
+        <a href="/" class="btn btn-primary mb-3">Back</a>
+
+        <div class="card mb-3">
+            <img id="recipeImage" class="card-img-top" alt="Recipe Image" src="{{data.recipe.photos_link}}" height="200em" style="object-fit: cover;">
+            <div class="card-body">
+                <h5 class="card-title" id="recipeTitle">
+                    {{data.recipe.title}}
+                </h5>
+                <p class="card-text" id="recipeContent">
+                    {{data.recipe.content}}
+                </p>
+                <p class="card-text"><small class="text-muted" id="likesCount">
+                    Likes: {{data.count_like}}
+                </small></p>
+                <p class="card-text"><small class="text-muted" id="commentsCount">
+                    Comments: {{data.count_comment}}
+                </small></p>
+            </div>
+        </div>
+
+        <h3>Comments</h3>
+
+        <!-- ... (comment form) -->
+        <form id="commentForm">
+            <div class="form-group">
+                <label for="comment">Comment:</label>
+                <textarea class="form-control" id="comment" name="comment" rows="3"></textarea>
+            </div>
+            <input type="hidden" name="recipe_id" id="recipe_id" value="{{data.recipe.id}}">
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+
+
+        
+
+        <!-- ... (comment form and comments list) -->
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            let recipe_id = $('input[name="recipe_id"]').val();
+
+            $.ajax({
+                url: `/get_comments/${recipe_id}`,
+                type: 'GET',
+                success: function (comments) {
+                    console.log(comments);
+                },
+                error: function (error) {
+                    console.error(error);
+                }
+            });
+
+            // send comment
+            $('#commentForm').submit(function (event) {
+                event.preventDefault();
+
+                let data = {
+                    comment: $('#comment').val(),
+                    recipe_id: $('input[name="recipe_id"]').val()
+                };
+
+                console.log(data);
+
+                $.ajax({
+                    url: '/add_comment',
+                    type: 'POST',
+                    data: data,
+                    headers: {
+                        Authorization: 'Bearer ' + localStorage.getItem('token')
+                    },
+                    success: function (response) {
+                        console.log(response);
+                    },
+                    error: function (error) {
+                        console.error(error);
+                    }
+                });
+            });
+
+        });
+    </script>
+</body>
+</html>
