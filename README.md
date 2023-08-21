@@ -6,9 +6,10 @@ Recipe Forum is an app built by Andi Alifsyah as part of a test at Artivo.id in 
 
 ## Features
 
-- Authentication
+- Authentication (Login and Logout)
 - Like and comment on recipes
 - Add recipes
+- Search Recipe
 
 ## Built With
 
